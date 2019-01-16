@@ -325,8 +325,6 @@ class Unet3d(nn.Module):
         if not outermost_linear:
             self.out_layer += [norm(out_channels, affine=True),
                                nn.ReLU(True)]
-            if use_dropout:
-                self.out_layer += [nn.Dropout3d(0.1)]
         self.out_layer = nn.Sequential(*self.out_layer)
 
     def forward(self, x):
@@ -404,8 +402,8 @@ class Unet(nn.Module):
                  num_down,
                  max_channels,
                  use_dropout,
-                 dropout_prob,
-                 upsampling_mode,
+                 upsampling_mode='transpose',
+                 dropout_prob=0.2,
                  norm=nn.BatchNorm2d,
                  outermost_linear=False):
         '''
