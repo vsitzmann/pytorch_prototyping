@@ -1,6 +1,7 @@
 # Pytorch modules with sane defaults for model prototyping
 This is a number of pytorch modules (all based on prior work of the ML community) with sane default parameters that I find useful in model prototyping. 
 
+I'll continue to update this repository.
 
 Contains:
 
