@@ -24,7 +24,7 @@ class DownBlock3D(nn.Module):
                       kernel_size=4,
                       padding=0,
                       stride=2,
-                      bias=False),
+                      bias=False if norm is not None else True),
         ]
 
         if norm is not None:
@@ -50,7 +50,7 @@ class UpBlock3D(nn.Module):
                                kernel_size=4,
                                stride=2,
                                padding=1,
-                               bias=False),
+                               bias=False if norm is not None else True),
         ]
 
         if norm is not None:
