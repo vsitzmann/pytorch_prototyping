@@ -160,15 +160,15 @@ class UpBlock(nn.Module):
         elif upsampling_mode == 'bilinear':
             net += [nn.UpsamplingBilinear2d(scale_factor=2)]
             net += [
-                Conv2dSame(in_channels, out_channels, kernel_size=3, stride=1, bias=True if norm is None else False)]
+                Conv2dSame(in_channels, out_channels, kernel_size=3, bias=True if norm is None else False)]
         elif upsampling_mode == 'nearest':
             net += [nn.UpsamplingNearest2d(scale_factor=2)]
             net += [
-                Conv2dSame(in_channels, out_channels, kernel_size=3, stride=1, bias=True if norm is None else False)]
+                Conv2dSame(in_channels, out_channels, kernel_size=3, bias=True if norm is None else False)]
         elif upsampling_mode == 'shuffle':
             net += [nn.PixelShuffle(upscale_factor=2)]
             net += [
-                Conv2dSame(in_channels // 4, out_channels, kernel_size=3, stride=1,
+                Conv2dSame(in_channels // 4, out_channels, kernel_size=3,
                            bias=True if norm is None else False)]
         else:
             raise ValueError("Unknown upsampling mode!")
