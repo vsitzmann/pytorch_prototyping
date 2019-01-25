@@ -423,9 +423,11 @@ class Unet(nn.Module):
         assert (num_down > 0), "Need at least one downsampling layer in UNet."
 
         # Define the in block
-        self.in_layer = [Conv2dSame(in_channels, nf0, kernel_size=3, bias=False),
-                         norm(nf0, affine=True),
-                         nn.LeakyReLU(0.2, True)]
+        self.in_layer = [Conv2dSame(in_channels, nf0, kernel_size=3, bias=True if norm is None else False)]
+        if norm is not None:
+            self.in_layer += [norm(nf0, affine=True)]
+        self.in_layer += [nn.LeakyReLU(0.2, True)]
+
         if use_dropout:
             self.in_layer += [nn.Dropout2d(0.1)]
         self.in_layer = nn.Sequential(*self.in_layer)
@@ -435,7 +437,7 @@ class Unet(nn.Module):
                                                   min(2 ** num_down * nf0, max_channels),
                                                   use_dropout=use_dropout,
                                                   dropout_prob=dropout_prob,
-                                                  norm=None,
+                                                  norm=None, # Innermost has no norm (spatial dimension 1)
                                                   upsampling_mode=upsampling_mode)
         for i in list(range(0, num_down - 1))[::-1]:
             self.unet_block = UnetSkipConnectionBlock(min(2 ** i * nf0, max_channels),
@@ -451,11 +453,13 @@ class Unet(nn.Module):
         self.out_layer = [Conv2dSame(2 * nf0,
                                      out_channels,
                                      kernel_size=3,
-                                     bias=outermost_linear)]
+                                     bias=outermost_linear or (norm is None))]
 
         if not outermost_linear:
-            self.out_layer += [norm(out_channels, affine=True),
-                               nn.ReLU(True)]
+            if norm is not None:
+                self.out_layer += [norm(out_channels, affine=True)]
+            self.out_layer += [nn.ReLU(True)]
+
             if use_dropout:
                 self.out_layer += [nn.Dropout2d(dropout_prob)]
         self.out_layer = nn.Sequential(*self.out_layer)
