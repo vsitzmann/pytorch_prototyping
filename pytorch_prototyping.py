@@ -433,12 +433,13 @@ class Unet(nn.Module):
         self.in_layer = nn.Sequential(*self.in_layer)
 
         # Define the center UNet block
-        self.unet_block = UnetSkipConnectionBlock(min(2 ** num_down * nf0, max_channels),
-                                                  min(2 ** num_down * nf0, max_channels),
+        self.unet_block = UnetSkipConnectionBlock(min(2 ** (num_down-1) * nf0, max_channels),
+                                                  min(2 ** (num_down-1) * nf0, max_channels),
                                                   use_dropout=use_dropout,
                                                   dropout_prob=dropout_prob,
                                                   norm=None, # Innermost has no norm (spatial dimension 1)
                                                   upsampling_mode=upsampling_mode)
+
         for i in list(range(0, num_down - 1))[::-1]:
             self.unet_block = UnetSkipConnectionBlock(min(2 ** i * nf0, max_channels),
                                                       min(2 ** (i + 1) * nf0, max_channels),
