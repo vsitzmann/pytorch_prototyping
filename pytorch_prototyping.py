@@ -403,7 +403,7 @@ class Unet(nn.Module):
                  max_channels,
                  use_dropout,
                  upsampling_mode='transpose',
-                 dropout_prob=0.2,
+                 dropout_prob=0.1,
                  norm=nn.BatchNorm2d,
                  outermost_linear=False):
         '''
@@ -429,7 +429,7 @@ class Unet(nn.Module):
         self.in_layer += [nn.LeakyReLU(0.2, True)]
 
         if use_dropout:
-            self.in_layer += [nn.Dropout2d(0.1)]
+            self.in_layer += [nn.Dropout2d(dropout_prob)]
         self.in_layer = nn.Sequential(*self.in_layer)
 
         # Define the center UNet block
