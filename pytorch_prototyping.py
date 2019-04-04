@@ -68,7 +68,7 @@ class UpBlock3D(nn.Module):
 
 
 class Conv3dSame(torch.nn.Module):
-    '''3D convolution that pads to keep spatial dimensions equal. 
+    '''3D convolution that pads to keep spatial dimensions equal.
     Cannot deal with stride. Only quadratic kernels (=scalar kernel_size).
     '''
 
@@ -93,7 +93,7 @@ class Conv3dSame(torch.nn.Module):
 
 
 class Conv2dSame(torch.nn.Module):
-    '''2D convolution that pads to keep spatial dimensions equal. 
+    '''2D convolution that pads to keep spatial dimensions equal.
     Cannot deal with stride. Only quadratic kernels (=scalar kernel_size).
     '''
 
@@ -140,7 +140,7 @@ class UpBlock(nn.Module):
         :param use_dropout: bool. Whether to use dropout or not.
         :param dropout_prob: Float. The dropout probability (if use_dropout is True)
         :param norm: Which norm to use. If None, no norm is used. Default is Batchnorm with affinity.
-        :param upsampling_mode: Which upsampling mode: 
+        :param upsampling_mode: Which upsampling mode:
                 transpose: Upsampling with stride-2, kernel size 4 transpose convolutions.
                 bilinear: Feature map is upsampled with bilinear upsampling, then a conv layer.
                 nearest: Feature map is upsampled with nearest neighbor upsampling, then a conv layer.
@@ -300,9 +300,12 @@ class Unet3d(nn.Module):
         assert (num_down > 0), "Need at least one downsampling layer in UNet3d."
 
         # Define the in block
-        self.in_layer = [Conv3dSame(in_channels, nf0, kernel_size=3, bias=False),
-                         norm(nf0, affine=True),
-                         nn.LeakyReLU(0.2, True)]
+        self.in_layer = [Conv3dSame(in_channels, nf0, kernel_size=3, bias=False)]
+
+        if norm is not None:
+            self.in_layer += [norm(nf0, affine=True)]
+
+        self.in_layer += [nn.LeakyReLU(0.2, True)]
         self.in_layer = nn.Sequential(*self.in_layer)
 
         # Define the center UNet block. The feature map has height and width 1 --> no batchnorm.
@@ -323,8 +326,9 @@ class Unet3d(nn.Module):
                                      bias=outermost_linear)]
 
         if not outermost_linear:
-            self.out_layer += [norm(out_channels, affine=True),
-                               nn.ReLU(True)]
+            if norm is not None:
+                self.out_layer += [norm(out_channels, affine=True)]
+            self.out_layer += [nn.ReLU(True)]
         self.out_layer = nn.Sequential(*self.out_layer)
 
     def forward(self, x):
@@ -501,7 +505,7 @@ class DownsamplingNet(nn.Module):
         :param in_channels: Number of input channels.
         :param use_dropout: Whether or not to use dropout.
         :param dropout_prob: Dropout probability.
-        :param last_layer_one: Whether the output of the last layer will have a spatial size of 1. In that case, 
+        :param last_layer_one: Whether the output of the last layer will have a spatial size of 1. In that case,
                                the last layer will not have batchnorm, else, it will.
         :param norm: Which norm to use. Defaults to BatchNorm.
         '''
@@ -546,7 +550,7 @@ class UpsamplingNet(nn.Module):
         :param upsampling_mode: Mode of upsampling. For documentation, see class "UpBlock"
         :param use_dropout: Whether or not to use dropout.
         :param dropout_prob: Dropout probability.
-        :param first_layer_one: Whether the input to the last layer will have a spatial size of 1. In that case, 
+        :param first_layer_one: Whether the input to the last layer will have a spatial size of 1. In that case,
                                the first layer will not have a norm, else, it will.
         :param norm: Which norm to use. Defaults to BatchNorm.
         '''
